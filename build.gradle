@@ -1,10 +1,12 @@
 plugins {
     id 'fabric-loom' apply false
+    id 'com.modrinth.minotaur' version '2.9.0' apply false
 }
 
 subprojects {
     apply plugin: 'fabric-loom'
     apply plugin: 'maven-publish'
+    apply plugin: 'com.modrinth.minotaur'
 
     version = "${rootProject.mod_version}+${project.minecraft_version}"
     group = rootProject.maven_group
@@ -55,5 +57,20 @@ subprojects {
     java {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
         withSourcesJar()
+    }
+
+    modrinth {
+        token = System.getenv("MODRINTH_TOKEN") ?: ""
+        projectId = rootProject.modrinth_project_id
+        versionNumber = project.version
+        versionName = "Work Penalty ${rootProject.mod_version} (MC ${project.minecraft_version})"
+        versionType = "release"
+        uploadFile = tasks.remapJar
+        additionalFiles = [tasks.remapSourcesJar]
+        gameVersions = [project.minecraft_version]
+        loaders = ["fabric"]
+        dependencies {
+            required.project "fabric-api"
+        }
     }
 }
