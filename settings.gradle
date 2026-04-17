@@ -1,0 +1,23 @@
+pluginManagement {
+    def loomVersion = settings.providers.gradleProperty('loom_version').orElse('1.16-SNAPSHOT').get()
+    plugins {
+        id 'fabric-loom' version "${loomVersion}"
+    }
+    repositories {
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = "WorkPenalty"
+
+new File(rootDir, 'versions').listFiles()?.sort { it.name }?.each { versionDir ->
+    if (versionDir.isDirectory()) {
+        include(":${versionDir.name}")
+        project(":${versionDir.name}").projectDir = versionDir
+    }
+}

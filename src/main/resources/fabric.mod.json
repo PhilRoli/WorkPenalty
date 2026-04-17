@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "workpenalty",
+  "version": "${version}",
+  "name": "Work Penalty",
+  "description": "Displays an item's work penalty in its tooltip so you can anticipate anvil costs.",
+  "authors": [
+    "Philipp"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "net.philipp.workpenalty.WorkPenaltyModClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "=${minecraft_version}",
+    "java": ">=21"
+  }
+}
