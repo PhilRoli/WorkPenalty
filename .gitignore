@@ -5,6 +5,7 @@ build/
 # Per-subproject build directories
 versions/*/build/
 versions/*/.gradle/
+versions/*/bin/
 
 # IDE files
 .idea/
