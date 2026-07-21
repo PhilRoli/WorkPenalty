@@ -58,7 +58,10 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
+      # Only lists versions not yet published to Modrinth. `./gradlew modrinth` would
+      # re-upload every subproject, which fails on versions already published under
+      # the same version number. Add newly-added versions here as they're released.
       - name: Build and publish to Modrinth
-        run: ./gradlew modrinth
+        run: ./gradlew :26.1:modrinth :26.1.1:modrinth :26.1.2:modrinth :26.2:modrinth
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
