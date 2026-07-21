@@ -1,10 +1,13 @@
 plugins {
     id 'fabric-loom' apply false
+    id 'net.fabricmc.fabric-loom' apply false
     id 'com.modrinth.minotaur' version '2.9.0' apply false
 }
 
 subprojects {
-    apply plugin: 'fabric-loom'
+    def unobfuscated = project.hasProperty('unobfuscated') && project.property('unobfuscated').toBoolean()
+
+    apply plugin: unobfuscated ? 'net.fabricmc.fabric-loom' : 'fabric-loom'
     apply plugin: 'maven-publish'
     apply plugin: 'com.modrinth.minotaur'
 
@@ -17,20 +20,28 @@ subprojects {
 
     dependencies {
         minecraft "com.mojang:minecraft:${project.minecraft_version}"
-        if (project.hasProperty('yarn_mappings')) {
-            mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+        if (unobfuscated) {
+            // Minecraft 26.1+ ships unobfuscated, so there is no mappings dependency at all.
+            implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+            implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
         } else {
-            mappings loom.officialMojangMappings()
+            if (project.hasProperty('yarn_mappings')) {
+                mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+            } else {
+                mappings loom.officialMojangMappings()
+            }
+            modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+            modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
         }
-        modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-        modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     }
 
     sourceSets {
         main {
-            java.srcDirs = [project.hasProperty('yarn_mappings')
-                ? rootProject.file('src/main/java')
-                : rootProject.file('src-mojang/main/java')]
+            java.srcDirs = [unobfuscated
+                ? rootProject.file('src-unobfuscated/main/java')
+                : (project.hasProperty('yarn_mappings')
+                    ? rootProject.file('src/main/java')
+                    : rootProject.file('src-mojang/main/java'))]
             resources.srcDirs = [rootProject.file('src/main/resources')]
         }
     }
@@ -48,7 +59,7 @@ subprojects {
         }
     }
 
-    def targetJavaVersion = 21
+    def targetJavaVersion = unobfuscated ? 25 : 21
     tasks.withType(JavaCompile).configureEach {
         it.options.encoding = "UTF-8"
         it.options.release = targetJavaVersion
@@ -65,8 +76,8 @@ subprojects {
         versionNumber = project.version
         versionName = "Work Penalty ${rootProject.mod_version} (MC ${project.minecraft_version})"
         versionType = "release"
-        uploadFile = tasks.remapJar
-        additionalFiles = [tasks.remapSourcesJar]
+        uploadFile = unobfuscated ? tasks.jar : tasks.remapJar
+        additionalFiles = [unobfuscated ? tasks.sourcesJar : tasks.remapSourcesJar]
         gameVersions = [project.minecraft_version]
         loaders = ["fabric"]
         dependencies {

@@ -1,7 +1,10 @@
 pluginManagement {
     def loomVersion = settings.providers.gradleProperty('loom_version').orElse('1.16-SNAPSHOT').get()
+    // Minecraft 26.1+ ships unobfuscated, so it needs the newer, mappings-free Loom plugin line.
+    def loomVersionUnobfuscated = settings.providers.gradleProperty('loom_version_unobfuscated').orElse('1.17-SNAPSHOT').get()
     plugins {
         id 'fabric-loom' version "${loomVersion}"
+        id 'net.fabricmc.fabric-loom' version "${loomVersionUnobfuscated}"
     }
     repositories {
         maven {
@@ -18,15 +21,17 @@ rootProject.name = "WorkPenalty"
 new File(rootDir, 'versions').listFiles()?.sort { it.name }?.each { versionDir ->
     if (versionDir.isDirectory()) {
         def propsFile = new File(versionDir, 'gradle.properties')
-        def hasMappings = false
+        def ready = false
         if (propsFile.exists()) {
             def props = new Properties()
             propsFile.withInputStream { props.load(it) }
+            def unobfuscated = props.getProperty('unobfuscated', 'false').toBoolean()
             // Yarn mappings aren't published for every Minecraft version right away.
-            // Skip subprojects without a usable mapping source until one appears.
-            hasMappings = props.containsKey('yarn_mappings')
+            // Skip subprojects without a usable mapping source until one appears,
+            // unless the version ships unobfuscated (no mappings needed at all).
+            ready = unobfuscated || props.containsKey('yarn_mappings')
         }
-        if (hasMappings) {
+        if (ready) {
             include(":${versionDir.name}")
             project(":${versionDir.name}").projectDir = versionDir
         }
