@@ -17,7 +17,18 @@ rootProject.name = "WorkPenalty"
 
 new File(rootDir, 'versions').listFiles()?.sort { it.name }?.each { versionDir ->
     if (versionDir.isDirectory()) {
-        include(":${versionDir.name}")
-        project(":${versionDir.name}").projectDir = versionDir
+        def propsFile = new File(versionDir, 'gradle.properties')
+        def hasMappings = false
+        if (propsFile.exists()) {
+            def props = new Properties()
+            propsFile.withInputStream { props.load(it) }
+            // Yarn mappings aren't published for every Minecraft version right away.
+            // Skip subprojects without a usable mapping source until one appears.
+            hasMappings = props.containsKey('yarn_mappings')
+        }
+        if (hasMappings) {
+            include(":${versionDir.name}")
+            project(":${versionDir.name}").projectDir = versionDir
+        }
     }
 }
