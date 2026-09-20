@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDKs
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: |
             21
@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDKs
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: |
             21
@@ -62,6 +62,6 @@ jobs:
       # re-upload every subproject, which fails on versions already published under
       # the same version number. Add newly-added versions here as they're released.
       - name: Build and publish to Modrinth
-        run: ./gradlew :26.1:modrinth :26.1.1:modrinth :26.1.2:modrinth :26.2:modrinth
+        run: ./gradlew :26.1:modrinth :26.1.1:modrinth :26.1.2:modrinth :26.2:modrinth :26.3:modrinth
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
